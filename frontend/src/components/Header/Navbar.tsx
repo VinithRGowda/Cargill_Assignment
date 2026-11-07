@@ -60,3 +60,4 @@ export const Navbar: React.FC<NavbarProps> = ({ totalRows, loading, onRefresh })
     </header>
   );
 };
+

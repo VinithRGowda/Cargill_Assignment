@@ -158,3 +158,4 @@ Retrieves or persists analyst filter presets and saved views.
 
 ## 📊 Design & Scaling Notes
 For detailed architectural rationale, OpenSearch index mappings, query DSL, and scaling tradeoffs, please refer to [DESIGN.md](DESIGN.md).
+

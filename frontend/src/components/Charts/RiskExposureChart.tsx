@@ -146,3 +146,4 @@ export const RiskExposureChart: React.FC<RiskExposureChartProps> = ({ byBook, by
     </div>
   );
 };
+

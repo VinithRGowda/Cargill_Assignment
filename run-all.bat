@@ -15,3 +15,4 @@ start "CRR Frontend" cmd /k "cd /d "%~dp0frontend" && npm run dev"
 echo Both services launched! Opening browser...
 timeout /t 3 /nobreak >nul
 start http://localhost:5173
+

@@ -118,3 +118,4 @@ export const RiskKpiCards: React.FC<RiskKpiCardsProps> = ({ summary, loading }) 
     </div>
   );
 };
+

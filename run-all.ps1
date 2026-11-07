@@ -16,3 +16,4 @@ Start-Sleep -Seconds 4
 Write-Host "[2/2] Starting React + Vite Frontend on http://localhost:5173..." -ForegroundColor Yellow
 Set-Location "frontend"
 npm run dev
+

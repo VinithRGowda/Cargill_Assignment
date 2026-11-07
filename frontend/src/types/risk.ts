@@ -114,3 +114,4 @@ export interface SavedView {
   groupBy?: 'book' | 'commodity' | 'region';
   createdAtUtc?: string;
 }
+

@@ -32,3 +32,4 @@ export function getPnlColorClass(val: number): string {
   if (val < 0) return 'text-rose-400 font-semibold';
   return 'text-slate-400';
 }
+

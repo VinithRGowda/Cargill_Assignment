@@ -35,3 +35,4 @@ public class CsvLoadingTests
         first.AsOfDate.Should().Be(new DateOnly(2026, 7, 7));
     }
 }
+

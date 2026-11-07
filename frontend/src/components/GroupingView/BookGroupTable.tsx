@@ -107,3 +107,4 @@ export const BookGroupTable: React.FC<BookGroupTableProps> = ({ books, onDrillDo
     </div>
   );
 };
+

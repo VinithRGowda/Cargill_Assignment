@@ -100,3 +100,4 @@ export const CommodityGroupTable: React.FC<CommodityGroupTableProps> = ({
     </div>
   );
 };
+

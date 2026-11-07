@@ -137,3 +137,4 @@ Using OpenSearch, pagination and filter-wide aggregations are executed in a sing
 2. **Redis Distributed Caching:** Cache pre-calculated aggregation cubes across standard book/region slices to handle thousands of concurrent analyst sessions.
 3. **OpenTelemetry Tracing & Metrics:** Integrate structured tracing (`System.Diagnostics.Activity`) to monitor query execution spans from API to storage.
 4. **Role-Based Access Control (RBAC):** Restrict desk visibility (e.g. Ags traders restricted from Ferrous/Freight proprietary books).
+

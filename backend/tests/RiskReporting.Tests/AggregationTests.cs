@@ -72,3 +72,4 @@ public class AggregationTests
         copper.Unit.Should().Contain("Metric Tons");
     }
 }
+
