@@ -1,8 +1,9 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useRef, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import {
   ColDef,
   GridReadyEvent,
+  GridApi,
   IDatasource,
   IGetRowsParams,
   RowClickedEvent,
@@ -14,11 +15,14 @@ import 'ag-grid-community/styles/ag-theme-quartz.css';
 import { RiskFilterCriteria, RiskPosition, SortCriteria } from '../../types/risk';
 import { riskClient } from '../../api/riskClient';
 import { formatNumber, formatUsd } from './formatters';
+import { Download, RotateCcw, Columns3 } from 'lucide-react';
+
+const COLUMN_STATE_STORAGE_KEY = 'crr_grid_column_state';
 
 interface RiskDataGridProps {
   filters: RiskFilterCriteria;
   onSelectPosition: (position: RiskPosition) => void;
-  onGridReadyNotify?: (api: any) => void;
+  onGridReadyNotify?: (api: GridApi) => void;
 }
 
 export const RiskDataGrid: React.FC<RiskDataGridProps> = ({
@@ -26,6 +30,9 @@ export const RiskDataGrid: React.FC<RiskDataGridProps> = ({
   onSelectPosition,
   onGridReadyNotify,
 }) => {
+  const gridApiRef = useRef<GridApi | null>(null);
+  const [columnStateSaved, setColumnStateSaved] = useState(false);
+
   const columnDefs = useMemo<ColDef[]>(() => {
     const defs: ColDef[] = [
       {
@@ -197,9 +204,50 @@ export const RiskDataGrid: React.FC<RiskDataGridProps> = ({
     };
   }, [filters]);
 
+  const saveColumnState = useCallback(() => {
+    if (gridApiRef.current) {
+      const state = gridApiRef.current.getColumnState();
+      try {
+        localStorage.setItem(COLUMN_STATE_STORAGE_KEY, JSON.stringify(state));
+        setColumnStateSaved(true);
+        setTimeout(() => setColumnStateSaved(false), 2000);
+      } catch (err) {
+        console.warn('Failed to save column state to localStorage', err);
+      }
+    }
+  }, []);
+
+  const resetColumnState = useCallback(() => {
+    if (gridApiRef.current) {
+      gridApiRef.current.resetColumnState();
+      localStorage.removeItem(COLUMN_STATE_STORAGE_KEY);
+    }
+  }, []);
+
+  const exportCsv = useCallback(() => {
+    if (gridApiRef.current) {
+      gridApiRef.current.exportDataAsCsv({
+        fileName: `risk_positions_export_${new Date().toISOString().slice(0, 10)}.csv`,
+      });
+    }
+  }, []);
+
   const onGridReady = useCallback(
     (event: GridReadyEvent) => {
+      gridApiRef.current = event.api;
       event.api.setGridOption('datasource', datasource);
+
+      // Restore column state if previously saved
+      try {
+        const saved = localStorage.getItem(COLUMN_STATE_STORAGE_KEY);
+        if (saved) {
+          const state = JSON.parse(saved);
+          event.api.applyColumnState({ state, applyOrder: true });
+        }
+      } catch (err) {
+        console.warn('Could not restore column state:', err);
+      }
+
       if (onGridReadyNotify) {
         onGridReadyNotify(event.api);
       }
@@ -217,22 +265,61 @@ export const RiskDataGrid: React.FC<RiskDataGridProps> = ({
   );
 
   return (
-    <div className="ag-theme-quartz-dark w-full h-[620px] rounded-lg shadow-xl overflow-hidden border border-slate-800">
-      <AgGridReact<RiskPosition>
-        columnDefs={columnDefs}
-        rowModelType="infinite"
-        datasource={datasource}
-        cacheBlockSize={100}
-        maxBlocksInCache={20}
-        infiniteInitialRowCount={100}
-        rowHeight={38}
-        headerHeight={40}
-        animateRows={true}
-        onGridReady={onGridReady}
-        onRowClicked={handleRowClick}
-        suppressCellFocus={false}
-        enableCellTextSelection={true}
-      />
+    <div className="flex flex-col gap-2">
+      {/* Grid Toolbar: Column Persistence & Export */}
+      <div className="flex items-center justify-between text-xs text-slate-400 px-1">
+        <div className="flex items-center gap-2">
+          <Columns3 className="w-3.5 h-3.5 text-sky-400" />
+          <span>Interactive Grid · Drag columns to reorder, drag edges to resize</span>
+          {columnStateSaved && (
+            <span className="badge bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px]">
+              Layout Saved
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={resetColumnState}
+            className="px-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5"
+            title="Reset columns to default width and order"
+          >
+            <RotateCcw className="w-3 h-3" /> Reset Columns
+          </button>
+
+          <button
+            type="button"
+            onClick={exportCsv}
+            className="px-2.5 py-1 rounded bg-slate-900 border border-slate-700 text-slate-300 hover:text-white hover:bg-slate-800 transition flex items-center gap-1.5"
+            title="Export currently loaded grid data as CSV"
+          >
+            <Download className="w-3 h-3 text-sky-400" /> Export CSV
+          </button>
+        </div>
+      </div>
+
+      {/* AG Grid Container */}
+      <div className="ag-theme-quartz-dark w-full h-[600px] rounded-lg shadow-xl overflow-hidden border border-slate-800">
+        <AgGridReact<RiskPosition>
+          columnDefs={columnDefs}
+          rowModelType="infinite"
+          datasource={datasource}
+          cacheBlockSize={100}
+          maxBlocksInCache={20}
+          infiniteInitialRowCount={100}
+          rowHeight={38}
+          headerHeight={40}
+          animateRows={true}
+          onGridReady={onGridReady}
+          onRowClicked={handleRowClick}
+          onColumnMoved={saveColumnState}
+          onColumnResized={saveColumnState}
+          onColumnPinned={saveColumnState}
+          suppressCellFocus={false}
+          enableCellTextSelection={true}
+        />
+      </div>
     </div>
   );
 };
