@@ -43,6 +43,7 @@ public class RiskPositionRepository : IRiskPositionRepository
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to initialize repository data from CSV.");
+                throw;
             }
         }
     }

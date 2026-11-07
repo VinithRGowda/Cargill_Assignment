@@ -23,4 +23,8 @@
     <ProjectReference Include="..\..\src\RiskReporting.Api\RiskReporting.Api.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\..\..\risk_positions.csv" CopyToOutputDirectory="PreserveNewest" Condition="Exists('..\..\..\risk_positions.csv')" />
+  </ItemGroup>
+
 </Project>

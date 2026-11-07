@@ -18,7 +18,9 @@ public class CsvRiskPositionLoader
         string filePath = ResolveFilePath(customFilePath);
         if (!File.Exists(filePath))
         {
-            throw new FileNotFoundException($"Risk positions CSV file not found at: {filePath}");
+            throw new FileNotFoundException(
+                $"Risk positions CSV file not found. Searched from BaseDirectory '{AppContext.BaseDirectory}' " +
+                $"and CurrentDirectory '{Directory.GetCurrentDirectory()}'. Resolved path was '{filePath}'.");
         }
 
         _logger.LogInformation("Loading risk positions from: {FilePath}", filePath);
@@ -95,40 +97,46 @@ public class CsvRiskPositionLoader
         return records;
     }
 
-    private static string ResolveFilePath(string? customFilePath)
+    public static string ResolveFilePath(string? customFilePath)
     {
         if (!string.IsNullOrWhiteSpace(customFilePath) && File.Exists(customFilePath))
         {
             return Path.GetFullPath(customFilePath);
         }
 
-        string[] candidates = new[]
+        // 1. Walk up from AppContext.BaseDirectory
+        try
         {
-            "risk_positions.csv",
-            Path.Combine(AppContext.BaseDirectory, "risk_positions.csv"),
-            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "risk_positions.csv"),
-            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "risk_positions.csv"),
-            Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "risk_positions.csv"),
-            Path.Combine(AppContext.BaseDirectory, "..", "risk_positions.csv"),
-            @"D:\Desktop\Cargill project\risk_positions.csv"
-        };
-
-        foreach (var candidate in candidates)
-        {
-            try
+            var dir = new DirectoryInfo(AppContext.BaseDirectory);
+            while (dir != null)
             {
-                var full = Path.GetFullPath(candidate);
-                if (File.Exists(full))
+                string candidate = Path.Combine(dir.FullName, "risk_positions.csv");
+                if (File.Exists(candidate))
                 {
-                    return full;
+                    return candidate;
                 }
-            }
-            catch
-            {
-                // Ignore invalid candidate paths
+                dir = dir.Parent;
             }
         }
+        catch { }
 
+        // 2. Walk up from Directory.GetCurrentDirectory()
+        try
+        {
+            var dir = new DirectoryInfo(Directory.GetCurrentDirectory());
+            while (dir != null)
+            {
+                string candidate = Path.Combine(dir.FullName, "risk_positions.csv");
+                if (File.Exists(candidate))
+                {
+                    return candidate;
+                }
+                dir = dir.Parent;
+            }
+        }
+        catch { }
+
+        // 3. Fallback to direct relative path
         return "risk_positions.csv";
     }
 }
