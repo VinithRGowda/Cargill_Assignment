@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/RiskReporting.Api/RiskReporting.Api.csproj" />
+    <Project Path="src/RiskReporting.Domain/RiskReporting.Domain.csproj" />
+    <Project Path="src/RiskReporting.Infrastructure/RiskReporting.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/RiskReporting.Tests/RiskReporting.Tests.csproj" />
+  </Folder>
+</Solution>
